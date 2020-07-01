@@ -75,12 +75,27 @@ class BookDeModelSerializer(serializers.ModelSerializer):
             raise exceptions.ValidationError("图书名含有敏感字")
         return value
 
+# 序列化器定义了要使用
+class BookListSerializer(serializers.ListSerializer):
+    # 使用此序列化器完成或修改多个对象
+    def update(self, instance, validated_data):
+        # print(self)  #当前序列化器类
+        # print(instance) #要修改的原对象
+        # print(validated_data) #新的数据
+        # 通过循环一个一个的进行修改
+        for index, obj in enumerate(instance):
+            # 每遍历一次 就修改一个对象的数据
+            self.child.update(obj, validated_data[index])
+
+        return instance
 
 class BookModelSerializerV2(serializers.ModelSerializer):
     class Meta:
         model = Book
         # fields应该填写哪些字段  应该填写序列化与反序列化字段的并集
         fields = ("book_name", "price", "publish", "authors", "pic")
+        # 为修改多个图书对象提供ListSerializer
+        list_serializer_class=BookListSerializer
 
         # 通过此参数指定哪些字段是参与序列化的  哪些字段是参与反序列化的
         extra_kwargs = {
