@@ -124,6 +124,7 @@ class BookModelSerializerV2(serializers.ModelSerializer):
         # 自定义用户名校验规则
         if "1" in value:
             raise exceptions.ValidationError("图书名含有敏感字")
+        print(self.context.get("request"))
         return value
 
     # 全局校验钩子  可以通过attrs获取到前台发送的所有的参数

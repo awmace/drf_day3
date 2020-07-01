@@ -3,6 +3,7 @@ from rest_framework.views import APIView
 from rest_framework import status
 from api.models import Book
 from api.serializers import BookModelSerializer, BookDeModelSerializer, BookModelSerializerV2
+from utils.response import APIResponse
 
 
 class BookAPIView(APIView):
@@ -54,21 +55,23 @@ class BookAPIViewV2(APIView):
         book_id = kwargs.get("id")
         if book_id:
             book_obj = Book.objects.filter(pk=book_id, is_delete=False)
-            book_ser = BookModelSerializerV2(book_obj).data
-            return Response({
-                "status": status.HTTP_200_OK,
-                "message": "查询单个图书成功",
-                "results": book_ser
-            })
+            book_ser = BookModelSerializerV2(book_obj,many=False).data
+            # return Response({
+            #     "status": status.HTTP_200_OK,
+            #     "message": "查询单个图书成功",
+            #     "results": book_ser
+            # })
+            return APIResponse(results=book_ser)
 
         else:
             book_list = Book.objects.filter(is_delete=False)
             book_list_ser = BookModelSerializerV2(book_list, many=True).data
-            return Response({
-                "status": status.HTTP_200_OK,
-                "message": "查询所有图书成功",
-                "results": book_list_ser
-            })
+            # return Response({
+            #     "status": status.HTTP_200_OK,
+            #     "message": "查询所有图书成功",
+            #     "results": book_list_ser
+            # })
+            return APIResponse(results=book_list_ser)
 
     def post(self, request, *args, **kwargs):
         """
@@ -243,7 +246,7 @@ class BookAPIViewV2(APIView):
         # print(new_data)      #新数据
         # print(book_list)     #表中数据
 
-        book_ser = BookModelSerializerV2(data=new_data, instance=book_list, partial=True,many=True)
+        book_ser = BookModelSerializerV2(data=new_data, instance=book_list, partial=True,many=True,context={"request":request})
         book_ser.is_valid(raise_exception=True)
         book_ser.save() # 保存修改
         return Response({
